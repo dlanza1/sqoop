@@ -720,6 +720,14 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
         .hasArg().withDescription("Use 'n' map tasks to import in parallel")
         .withLongOpt(NUM_MAPPERS_ARG)
         .create(NUM_MAPPERS_SHORT_ARG));
+    importOpts.addOption(OptionBuilder
+            .withDescription("Use reduce phase for partitioning")
+            .withLongOpt(REDUCE_PHASE_ARG)
+            .create());
+    importOpts.addOption(OptionBuilder.withArgName("n")
+            .hasArg().withDescription("Use 'n' reduce tasks to import in parallel")
+            .withLongOpt(NUM_REDUCERS_ARG)
+            .create(NUM_REDUCERS_SHORT_ARG));
     importOpts.addOption(OptionBuilder.withArgName("name")
         .hasArg().withDescription("Set name for generated mapreduce job")
         .withLongOpt(MAPREDUCE_JOB_NAME)
@@ -937,6 +945,16 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
 
       if (in.hasOption(NUM_MAPPERS_ARG)) {
         out.setNumMappers(Integer.parseInt(in.getOptionValue(NUM_MAPPERS_ARG)));
+      }
+      
+      if (in.hasOption(REDUCE_PHASE_ARG)) {
+          out.setUseReducePhaseForPartitioning(true);
+      }else{
+    	  out.setUseReducePhaseForPartitioning(false);
+      }
+      
+      if (in.hasOption(NUM_REDUCERS_ARG)) {
+        out.setNumReducers(Integer.parseInt(in.getOptionValue(NUM_REDUCERS_ARG)));
       }
 
       if (in.hasOption(MAPREDUCE_JOB_NAME)) {

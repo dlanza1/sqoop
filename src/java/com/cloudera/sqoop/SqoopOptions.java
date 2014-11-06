@@ -113,5 +113,7 @@ public class SqoopOptions
       throw new InvalidOptionsException(ex.getMessage());
     }
   }
+
+
 }
 

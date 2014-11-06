@@ -41,6 +41,8 @@ public abstract class BaseSqoopTool
           org.apache.sqoop.tool.BaseSqoopTool.PASSWORD_PROMPT_ARG;
   public static final String DIRECT_ARG =
           org.apache.sqoop.tool.BaseSqoopTool.DIRECT_ARG;
+  public static final String REDUCE_PHASE_ARG =
+          org.apache.sqoop.tool.BaseSqoopTool.REDUCE_PHASE_ARG;
   public static final String BATCH_ARG =
           org.apache.sqoop.tool.BaseSqoopTool.BATCH_ARG;
   public static final String TABLE_ARG =
@@ -103,6 +105,10 @@ public abstract class BaseSqoopTool
           org.apache.sqoop.tool.BaseSqoopTool.NUM_MAPPERS_ARG;
   public static final String NUM_MAPPERS_SHORT_ARG =
           org.apache.sqoop.tool.BaseSqoopTool.NUM_MAPPERS_SHORT_ARG;
+  public static final String NUM_REDUCERS_ARG =
+          org.apache.sqoop.tool.BaseSqoopTool.NUM_REDUCERS_ARG;
+  public static final String NUM_REDUCERS_SHORT_ARG =
+          org.apache.sqoop.tool.BaseSqoopTool.NUM_REDUCERS_SHORT_ARG;
   public static final String COMPRESS_ARG =
           org.apache.sqoop.tool.BaseSqoopTool.COMPRESS_ARG;
   public static final String COMPRESSION_CODEC_ARG =

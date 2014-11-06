@@ -18,6 +18,8 @@
 
 package org.apache.sqoop.tool;
 
+import org.apache.sqoop.SqoopVersion;
+
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.cli.ToolOptions;
 
@@ -33,7 +35,7 @@ public class VersionTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
   @Override
   /** {@inheritDoc} */
   public int run(SqoopOptions options) {
-    System.out.print(new org.apache.sqoop.SqoopVersion().toString());
+    System.out.print(new SqoopVersion().toString());
     return 0;
   }
 

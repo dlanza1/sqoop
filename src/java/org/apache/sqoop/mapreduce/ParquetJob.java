@@ -21,11 +21,14 @@ package org.apache.sqoop.mapreduce;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 import org.kitesdk.data.Dataset;
 import org.kitesdk.data.DatasetDescriptor;
 import org.kitesdk.data.DatasetNotFoundException;
 import org.kitesdk.data.Datasets;
 import org.kitesdk.data.Formats;
+import org.kitesdk.data.PartitionStrategy;
 import org.kitesdk.data.mapreduce.DatasetKeyOutputFormat;
 import org.kitesdk.data.spi.SchemaValidationUtil;
 
@@ -69,13 +72,21 @@ public final class ParquetJob {
     } else {
       dataset = createDataset(schema, uri);
     }
+    
     conf.set(CONF_AVRO_SCHEMA, schema.toString());
+
     DatasetKeyOutputFormat.configure(conf).writeTo(dataset);
   }
 
   private static Dataset createDataset(Schema schema, String uri) {
     DatasetDescriptor descriptor = new DatasetDescriptor.Builder()
         .schema(schema)
+        .partitionStrategy(new PartitionStrategy.Builder()
+        		.year("UTC_STAMP")
+        		.month("UTC_STAMP")
+        		.day("UTC_STAMP")
+        		.hour("UTC_STAMP")
+        		.build())
         .format(Formats.PARQUET)
         .build();
     return Datasets.create(uri, descriptor, GenericRecord.class);

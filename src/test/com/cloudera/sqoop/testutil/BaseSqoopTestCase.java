@@ -235,7 +235,7 @@ public abstract class BaseSqoopTestCase extends TestCase {
     }
   }
 
-  private void guaranteeCleanWarehouse() {
+  protected void guaranteeCleanWarehouse() {
     if (isOnPhysicalCluster()) {
       Path warehousePath = new Path(this.getWarehouseDir());
       try {

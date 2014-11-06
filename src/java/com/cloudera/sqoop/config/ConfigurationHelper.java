@@ -28,85 +28,89 @@ import org.apache.hadoop.mapreduce.JobContext;
  */
 public final class ConfigurationHelper {
 
-  public static void setJobNumMaps(Job job, int numMapTasks) {
-    org.apache.sqoop.config.ConfigurationHelper.setJobNumMaps(job, numMapTasks);
-  }
+	public static void setJobNumMaps(Job job, int numMapTasks) {
+		org.apache.sqoop.config.ConfigurationHelper.setJobNumMaps(job,
+				numMapTasks);
+	}
 
-  public static int getJobNumMaps(JobContext job) {
-    return org.apache.sqoop.config.ConfigurationHelper.getJobNumMaps(job);
-  }
+	public static void setJobNumReduce(Job job, int numReduceTasks) {
+		org.apache.sqoop.config.ConfigurationHelper.setJobNumReduces(job,
+				numReduceTasks);
+	}
 
-  public static long getNumMapOutputRecords(Job job)
-      throws IOException, InterruptedException {
-    return org.apache.sqoop.config.
-           ConfigurationHelper.getNumMapOutputRecords(job);
-  }
+	public static int getJobNumMaps(JobContext job) {
+		return org.apache.sqoop.config.ConfigurationHelper.getJobNumMaps(job);
+	}
 
-  public static long getNumMapInputRecords(Job job)
-      throws IOException, InterruptedException {
-    return org.apache.sqoop.config.
-            ConfigurationHelper.getNumMapInputRecords(job);
-  }
+	public static long getNumMapOutputRecords(Job job) throws IOException,
+			InterruptedException {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getNumMapOutputRecords(job);
+	}
 
-  public static int getConfNumMaps(Configuration conf) {
-    return org.apache.sqoop.config.ConfigurationHelper.getConfNumMaps(conf);
-  }
+	public static long getNumMapInputRecords(Job job) throws IOException,
+			InterruptedException {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getNumMapInputRecords(job);
+	}
 
-  public static void setJobMapSpeculativeExecution(Job job, boolean isEnabled) {
-    org.apache.sqoop.config.
-        ConfigurationHelper.setJobMapSpeculativeExecution(job, isEnabled);
-  }
+	public static int getConfNumMaps(Configuration conf) {
+		return org.apache.sqoop.config.ConfigurationHelper.getConfNumMaps(conf);
+	}
 
-  public static void setJobReduceSpeculativeExecution(
-      Job job, boolean isEnabled) {
-    org.apache.sqoop.config.
-        ConfigurationHelper.setJobReduceSpeculativeExecution(job, isEnabled);
-  }
+	public static void setJobMapSpeculativeExecution(Job job, boolean isEnabled) {
+		org.apache.sqoop.config.ConfigurationHelper
+				.setJobMapSpeculativeExecution(job, isEnabled);
+	}
 
-  public static void setJobtrackerAddr(Configuration conf, String addr) {
-    org.apache.sqoop.config.
-        ConfigurationHelper.setJobtrackerAddr(conf, addr);
-  }
+	public static void setJobReduceSpeculativeExecution(Job job,
+			boolean isEnabled) {
+		org.apache.sqoop.config.ConfigurationHelper
+				.setJobReduceSpeculativeExecution(job, isEnabled);
+	}
 
-  public static String getDbInputClassProperty() {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.getDbInputClassProperty();
-  }
+	public static void setJobtrackerAddr(Configuration conf, String addr) {
+		org.apache.sqoop.config.ConfigurationHelper.setJobtrackerAddr(conf,
+				addr);
+	}
 
-  public static String getDbUsernameProperty() {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.getDbUsernameProperty();
-  }
+	public static String getDbInputClassProperty() {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getDbInputClassProperty();
+	}
 
-  public static String getDbPasswordProperty() {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.getDbPasswordProperty();
-  }
+	public static String getDbUsernameProperty() {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getDbUsernameProperty();
+	}
 
-  public static String getDbUrlProperty() {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.getDbUrlProperty();
-  }
+	public static String getDbPasswordProperty() {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getDbPasswordProperty();
+	}
 
-  public static String getDbInputTableNameProperty() {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.getDbInputTableNameProperty();
-  }
+	public static String getDbUrlProperty() {
+		return org.apache.sqoop.config.ConfigurationHelper.getDbUrlProperty();
+	}
 
+	public static String getDbInputTableNameProperty() {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getDbInputTableNameProperty();
+	}
 
-  public static String getDbInputConditionsProperty() {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.getDbInputConditionsProperty();
-  }
+	public static String getDbInputConditionsProperty() {
+		return org.apache.sqoop.config.ConfigurationHelper
+				.getDbInputConditionsProperty();
+	}
 
-  public static String [] parseGenericOptions(
-      Configuration conf, String [] args) throws IOException {
-    return org.apache.sqoop.config.
-               ConfigurationHelper.parseGenericOptions(conf, args);
-  }
+	public static String[] parseGenericOptions(Configuration conf, String[] args)
+			throws IOException {
+		return org.apache.sqoop.config.ConfigurationHelper.parseGenericOptions(
+				conf, args);
+	}
 
-  private ConfigurationHelper() {
-    // Disable explicit object creation
-  }
+	private ConfigurationHelper() {
+		// Disable explicit object creation
+	}
 
 }

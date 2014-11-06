@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -49,6 +50,7 @@ import com.cloudera.sqoop.mapreduce.ImportJobBase;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
 import com.cloudera.sqoop.orm.AvroSchemaGenerator;
+
 import org.kitesdk.data.mapreduce.DatasetKeyOutputFormat;
 
 /**
@@ -89,6 +91,7 @@ public class DataDrivenImportJob extends ImportJobBase {
     } else if (options.getFileLayout()
         == SqoopOptions.FileLayout.AvroDataFile) {
       Schema schema = generateAvroSchema(tableName);
+      
       try {
         writeAvroSchema(schema);
       } catch (final IOException e) {
@@ -109,10 +112,16 @@ public class DataDrivenImportJob extends ImportJobBase {
         FileSystem fs = FileSystem.get(conf);
         uri = "dataset:" + fs.makeQualified(getContext().getDestination());
       }
+      
       ParquetJob.configureImportJob(conf, schema, uri, options.isAppendMode());
     }
 
     job.setMapperClass(getMapperClass());
+    
+    if(options.isUseReducePhaseForPartitioning()){
+	    job.setMapOutputKeyClass(Text.class);
+	    job.setMapOutputValueClass(BytesWritable.class);
+    }
   }
 
   private Schema generateAvroSchema(String tableName) throws IOException {
@@ -153,7 +162,11 @@ public class DataDrivenImportJob extends ImportJobBase {
       return AvroImportMapper.class;
     } else if (options.getFileLayout()
         == SqoopOptions.FileLayout.ParquetFile) {
-      return ParquetImportMapper.class;
+    	
+    	if(options.isUseReducePhaseForPartitioning())
+    		return ParquetPartitionedImportMapper.class;
+    	else
+    		return ParquetImportMapper.class;
     }
 
     return null;

@@ -39,6 +39,11 @@ public final class ConfigurationConstants {
    * The Configuration property identifying the number of map tasks to be used.
    */
   public static final String PROP_MAPRED_MAP_TASKS = "mapred.map.tasks";
+  
+  /**
+   * The Configuration property identifying the number of reduce tasks to be used.
+   */
+  public static final String PROP_MAPRED_REDUCE_TASKS = "mapred.reduce.tasks";
 
   /**
    * The Configuration property identifying the speculative execution flag for

@@ -126,6 +126,8 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String MAPREDUCE_JOB_NAME = "mapreduce-job-name";
   public static final String NUM_MAPPERS_ARG = "num-mappers";
   public static final String NUM_MAPPERS_SHORT_ARG = "m";
+  public static final String NUM_REDUCERS_ARG = "num-reducers";
+  public static final String NUM_REDUCERS_SHORT_ARG = "r";
   public static final String COMPRESS_ARG = "compress";
   public static final String COMPRESSION_CODEC_ARG = "compression-codec";
   public static final String COMPRESS_SHORT_ARG = "z";
@@ -163,6 +165,8 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String CALL_ARG = "call";
   public static final String SKIP_DISTCACHE_ARG = "skip-dist-cache";
   public static final String RELAXED_ISOLATION = "relaxed-isolation";
+  
+  public static final String REDUCE_PHASE_ARG = "reduce-phase";
 
   // Arguments for validation.
   public static final String VALIDATE_ARG = "validate";
@@ -219,6 +223,8 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String NEW_DATASET_ARG = "new-data";
   public static final String OLD_DATASET_ARG = "onto";
   public static final String MERGE_KEY_ARG = "merge-key";
+
+
 
   public BaseSqoopTool() {
   }
@@ -314,7 +320,7 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 
 
   /**
-   * If argv contains an entry "--", return an array containing all elements
+   * If arrgv contains an entry "--", return an array containing all elements
    * after the "--" separator. Otherwise, return null.
    * @param argv a set of arguments to scan for the subcommand arguments.
    */
