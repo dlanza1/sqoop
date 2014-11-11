@@ -67,7 +67,11 @@ public class ParquetImportMapper
 
     GenericRecord outKey = AvroUtil.toGenericRecord(val.getFieldMap(), schema,
         bigDecimalFormatString);
-    context.write(outKey, null);
+    
+	if(outKey.get("VARIABLE_ID") != null
+			&& outKey.get("UTC_STAMP") != null
+			&& outKey.get("VALUE") != null)
+		context.write(outKey, null);
   }
 
   @Override

@@ -88,7 +88,9 @@ public final class ParquetJob {
         		.hour("UTC_STAMP")
         		.build())
         .format(Formats.PARQUET)
+        .property("parquet.file_per_block", "true")
         .build();
+    
     return Datasets.create(uri, descriptor, GenericRecord.class);
   }
 
