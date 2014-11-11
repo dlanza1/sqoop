@@ -20,9 +20,12 @@ package org.apache.sqoop.mapreduce;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.kitesdk.data.CompressionType;
 import org.kitesdk.data.Dataset;
 import org.kitesdk.data.DatasetDescriptor;
 import org.kitesdk.data.DatasetNotFoundException;
@@ -39,19 +42,35 @@ import java.io.IOException;
  */
 public final class ParquetJob {
 
+  public static final Log LOG = LogFactory.getLog(ParquetJob.class.getName());
+
   private ParquetJob() {
   }
 
-  private static final String CONF_AVRO_SCHEMA = "avro.schema";
+  private static final String CONF_AVRO_SCHEMA = "parquetjob.avro.schema";
+  static final String CONF_OUTPUT_CODEC = "parquetjob.output.codec";
 
   public static Schema getAvroSchema(Configuration conf) {
     return new Schema.Parser().parse(conf.get(CONF_AVRO_SCHEMA));
   }
 
+  public static CompressionType getCompressionType(Configuration conf) {
+    CompressionType defaults = Formats.PARQUET.getDefaultCompressionType();
+    String codec = conf.get(CONF_OUTPUT_CODEC, defaults.getName());
+    try {
+      return CompressionType.forName(codec);
+    } catch (IllegalArgumentException ex) {
+      LOG.warn(String.format(
+          "Unsupported compression type '%s'. Fallback to '%s'.",
+          codec, defaults));
+    }
+    return defaults;
+  }
+
   /**
    * Configure the import job. The import process will use a Kite dataset to
    * write data records into Parquet format internally. The input key class is
-   * {@link org.apache.sqoop.lib.SqoopAvroRecord}. The output key is
+   * {@link org.apache.sqoop.lib.SqoopRecord}. The output key is
    * {@link org.apache.avro.generic.GenericRecord}.
    */
   public static void configureImportJob(Configuration conf, Schema schema,
@@ -61,7 +80,7 @@ public final class ParquetJob {
       try {
         dataset = Datasets.load(uri);
       } catch (DatasetNotFoundException ex) {
-        dataset = createDataset(schema, uri);
+        dataset = createDataset(schema, getCompressionType(conf), uri);
       }
       Schema writtenWith = dataset.getDescriptor().getSchema();
       if (!SchemaValidationUtil.canRead(writtenWith, schema)) {
@@ -70,7 +89,7 @@ public final class ParquetJob {
                 writtenWith, schema));
       }
     } else {
-      dataset = createDataset(schema, uri);
+      dataset = createDataset(schema, getCompressionType(conf), uri);
     }
     
     conf.set(CONF_AVRO_SCHEMA, schema.toString());
@@ -78,7 +97,8 @@ public final class ParquetJob {
     DatasetKeyOutputFormat.configure(conf).writeTo(dataset);
   }
 
-  private static Dataset createDataset(Schema schema, String uri) {
+  private static Dataset createDataset(Schema schema,
+      CompressionType compressionType, String uri) {
     DatasetDescriptor descriptor = new DatasetDescriptor.Builder()
         .schema(schema)
         .partitionStrategy(new PartitionStrategy.Builder()
@@ -89,6 +109,7 @@ public final class ParquetJob {
         		.build())
         .format(Formats.PARQUET)
         .property("parquet.file_per_block", "true")
+        .compressionType(compressionType)
         .build();
     
     return Datasets.create(uri, descriptor, GenericRecord.class);

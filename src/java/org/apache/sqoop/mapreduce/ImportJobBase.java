@@ -155,18 +155,15 @@ public class ImportJobBase extends JobBase {
 				}
 			}
 
-			if (options.getFileLayout() == SqoopOptions.FileLayout.ParquetFile) {
-				if (codecName != null) {
-					Configuration conf = job.getConfiguration();
-					String shortName = CodecMap.getCodecShortNameByName(
-							codecName, conf);
-					if (!shortName.equalsIgnoreCase("default")
-							&& !shortName.equalsIgnoreCase("snappy")) {
-						// TODO: SQOOP-1391 More compression codec support
-						LOG.warn("Will use snappy as compression codec instead");
-					}
-				}
-			}
+		    if (options.getFileLayout() == SqoopOptions.FileLayout.ParquetFile) {
+		      if (codecName != null) {
+		        Configuration conf = job.getConfiguration();
+		        String shortName = CodecMap.getCodecShortNameByName(codecName, conf);
+		        if (!shortName.equalsIgnoreCase("default")) {
+		          conf.set(ParquetJob.CONF_OUTPUT_CODEC, shortName);
+		        }
+		      }
+		    }
 		}
 
 		Path outputPath = context.getDestination();
