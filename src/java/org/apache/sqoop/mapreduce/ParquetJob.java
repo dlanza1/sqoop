@@ -33,9 +33,12 @@ import org.kitesdk.data.Datasets;
 import org.kitesdk.data.Formats;
 import org.kitesdk.data.PartitionStrategy;
 import org.kitesdk.data.mapreduce.DatasetKeyOutputFormat;
+import org.kitesdk.data.spi.FieldPartitioner;
 import org.kitesdk.data.spi.SchemaValidationUtil;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Helper class for setting up a Parquet MapReduce job.
@@ -99,16 +102,19 @@ public final class ParquetJob {
 
   private static Dataset createDataset(Schema schema,
       CompressionType compressionType, String uri) {
+
     DatasetDescriptor descriptor = new DatasetDescriptor.Builder()
         .schema(schema)
         .partitionStrategy(new PartitionStrategy.Builder()
+        		.module("VARIABLE_ID", 10)
         		.year("UTC_STAMP")
         		.month("UTC_STAMP")
-        		.day("UTC_STAMP")
-        		.hour("UTC_STAMP")
+//        		.day("UTC_STAMP")
+//        		.hour("UTC_STAMP")
         		.build())
         .format(Formats.PARQUET)
         .property("parquet.file_per_block", "true")
+        .property("kite.writer.cache-size", "15")
         .compressionType(compressionType)
         .build();
     

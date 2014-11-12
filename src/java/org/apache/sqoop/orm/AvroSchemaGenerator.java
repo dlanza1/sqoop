@@ -90,7 +90,11 @@ public class AvroSchemaGenerator {
    * @return Schema
    */
   public Schema toAvroSchema(int sqlType, String columnName) {
-    return Schema.create(toAvroType(columnName, sqlType));
+	  List<Schema> childSchemas = new ArrayList<Schema>();
+	  childSchemas.add(Schema.create(toAvroType(columnName, sqlType)));
+	  childSchemas.add(Schema.create(Schema.Type.NULL));
+	  
+	  return Schema.createUnion(childSchemas);
   }
 
   public Schema toAvroSchema(int sqlType) {
