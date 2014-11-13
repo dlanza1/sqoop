@@ -122,6 +122,17 @@ public class DataDrivenDBInputFormat<T extends DBWritable>
   /** {@inheritDoc} */
   public List<InputSplit> getSplits(JobContext job) throws IOException {
 
+	//Check if the splitter uses the module, if so, it's no necessary run the boundary query
+    int module = job.getConfiguration().getInt("split.module", -1);
+    if(module != -1){
+    	try {
+			return new ModuleIntegerSplitter().split(job.getConfiguration(), module,
+			          getDBConf().getInputOrderBy());
+		} catch (SQLException e) {
+			throw new IOException(e);
+		}
+    }
+	    
     int targetNumTasks = ConfigurationHelper.getJobNumMaps(job);
     String boundaryQuery = getDBConf().getInputBoundingQuery();
 
@@ -154,7 +165,7 @@ public class DataDrivenDBInputFormat<T extends DBWritable>
       // dates, etc.)
       int sqlDataType = results.getMetaData().getColumnType(1);
       boolean isSigned = results.getMetaData().isSigned(1);
-
+      System.out.println(sqlDataType);
       // MySQL has an unsigned integer which we need to allocate space for
       if (sqlDataType == Types.INTEGER && !isSigned){
           sqlDataType = Types.BIGINT;

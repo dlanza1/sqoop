@@ -59,7 +59,9 @@ public class ParquetImportJobTest extends ImportJobTestCase {
 						 "10",         "'2003-09-05 17:42:58.135791231'",	"13.3",
 						 "11",         "'2003-09-05 17:42:58.135791231'",	"13.3",
 						 "12",         "'2003-09-05 17:42:58.135791231'",	"13.3",
-						 "3",          "'2003-09-05 17:42:58.435134541'",	null};
+						 null,         "'2003-09-05 17:42:58.135791231'",	"13.3",
+						 "14",         null,								"13.3",
+						 "15",         "'2003-09-05 17:42:58.435134541'",	null};
 	
 	setCurTableName("LHCLOG_DATA_NUMERIC");
 	createTableWithColTypesAndNames(colNames, colTypes, vals);
@@ -72,20 +74,30 @@ public class ParquetImportJobTest extends ImportJobTestCase {
 
     ArrayList<String> args = new ArrayList<String>();
     CommonArgs.addHadoopFlags(args);
-    args.add("--table");
-    args.add(getTableName());
+    args.add("-D");
+    args.add("split.module=10");
+    args.add("-D");
+    args.add("partition.module=10");
+//    args.add("--table");
+//    args.add(getTableName());
+    args.add("--query");
+    args.add("SELECT * FROM LHCLOG_DATA_NUMERIC "
+    		+ "WHERE UTC_STAMP BETWEEN '2003-09-04' AND '2003-09-06' "
+    		+ "AND $CONDITIONS");
     args.add("--split-by");
-    args.add("UTC_STAMP");
-    args.add("--warehouse-dir");
-    args.add(getWarehouseDir());
+    args.add("VARIABLE_ID");
+//    args.add("--warehouse-dir");
+//    args.add(getWarehouseDir());
+    args.add("--target-dir");
+    args.add("LHCLOG_DATA_NUMERIC");
     args.add("--connect");
     args.add(getConnectString());
     args.add("--as-parquetfile");
     args.add("--reduce-phase");
     args.add("--num-mappers");
     args.add("2");
-    args.add("--num-reducers");
-    args.add("3");
+//    args.add("--num-reducers");
+//    args.add("3");
     String[] argv = args.toArray(new String[0]);
 
     Sqoop importer = new Sqoop(new ImportTool());

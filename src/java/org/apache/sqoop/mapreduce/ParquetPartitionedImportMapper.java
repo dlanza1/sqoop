@@ -38,16 +38,20 @@ import org.apache.sqoop.mapreduce.AutoProgressMapper;
 public class ParquetPartitionedImportMapper extends
 		AutoProgressMapper<LongWritable, SqoopRecord, Text, BytesWritable> {
 
-	private static final int DIFF_HOURS = 0;
+//	private static final int DIFF_HOURS = 0;
 	
-	private static final long MILLISECONDS_TO_ADD = DIFF_HOURS * 60 * 60 * 1000;
+//	private static final long MILLISECONDS_TO_ADD = DIFF_HOURS * 60 * 60 * 1000;
 	
-	private Calendar cal;
+//	private Calendar cal;
+	
+	private static int module;
 
 	@Override
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
-		this.cal = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT-2"));
+//		this.cal = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT-2"));
+		
+		module = context.getConfiguration().getInt("partition.module", -1);
 	}
 	
 	protected void map(
@@ -57,8 +61,8 @@ public class ParquetPartitionedImportMapper extends
 			throws IOException, InterruptedException {
 		
 		//Get timestamp from record
-		Timestamp timestamp = (Timestamp) val.getFieldMap().get("UTC_STAMP");
-		this.cal.setTimeInMillis(timestamp.getTime());
+//		Timestamp timestamp = (Timestamp) val.getFieldMap().get("UTC_STAMP");
+//		this.cal.setTimeInMillis(timestamp.getTime());
 		
 		//Get partition key
 		Text keyOut = getKey(val);
@@ -79,19 +83,23 @@ public class ParquetPartitionedImportMapper extends
 		return new BytesWritable(bos.toByteArray());
 	}
 
-	private void applyTimeDiff(Timestamp val) {
-		long milliseconds = val.getTime() + MILLISECONDS_TO_ADD;
-		int nanoseconds = val.getNanos();
-		
-		val.setTime(milliseconds);
-		val.setNanos(nanoseconds);
-	}
+//	private void applyTimeDiff(Timestamp val) {
+//		long milliseconds = val.getTime() + MILLISECONDS_TO_ADD;
+//		int nanoseconds = val.getNanos();
+//		
+//		val.setTime(milliseconds);
+//		val.setNanos(nanoseconds);
+//	}
 
 	private Text getKey(SqoopRecord val) {
-		return new Text(this.cal.get(Calendar.YEAR) + "-"
-				+ this.cal.get(Calendar.MONTH) + "-"
-				+ this.cal.get(Calendar.DAY_OF_MONTH) + " "
-				+ this.cal.get(Calendar.HOUR_OF_DAY));
+//		return new Text(this.cal.get(Calendar.YEAR) + "-"
+//				+ this.cal.get(Calendar.MONTH) + "-"
+//				+ this.cal.get(Calendar.DAY_OF_MONTH) + " "
+//				+ this.cal.get(Calendar.HOUR_OF_DAY));
+		
+		int variable_id = (int) val.getFieldMap().get("VARIABLE_ID");
+		
+		return new Text(String.valueOf(variable_id % module));
 	}
 
 }

@@ -32,6 +32,7 @@ import org.kitesdk.data.DatasetNotFoundException;
 import org.kitesdk.data.Datasets;
 import org.kitesdk.data.Formats;
 import org.kitesdk.data.PartitionStrategy;
+import org.kitesdk.data.PartitionStrategy.Builder;
 import org.kitesdk.data.mapreduce.DatasetKeyOutputFormat;
 import org.kitesdk.data.spi.FieldPartitioner;
 import org.kitesdk.data.spi.SchemaValidationUtil;
@@ -83,7 +84,7 @@ public final class ParquetJob {
       try {
         dataset = Datasets.load(uri);
       } catch (DatasetNotFoundException ex) {
-        dataset = createDataset(schema, getCompressionType(conf), uri);
+        dataset = createDataset(schema, getCompressionType(conf), uri, conf);
       }
       Schema writtenWith = dataset.getDescriptor().getSchema();
       if (!SchemaValidationUtil.canRead(writtenWith, schema)) {
@@ -92,7 +93,7 @@ public final class ParquetJob {
                 writtenWith, schema));
       }
     } else {
-      dataset = createDataset(schema, getCompressionType(conf), uri);
+      dataset = createDataset(schema, getCompressionType(conf), uri, conf);
     }
     
     conf.set(CONF_AVRO_SCHEMA, schema.toString());
@@ -101,20 +102,26 @@ public final class ParquetJob {
   }
 
   private static Dataset createDataset(Schema schema,
-      CompressionType compressionType, String uri) {
+      CompressionType compressionType, String uri, Configuration conf) {
 
+	int module = conf.getInt("partition.module", -1);
+	  
+	Builder partBuilder = new PartitionStrategy.Builder();
+	
+	if(module != -1)
+		partBuilder.module("VARIABLE_ID", module);
+
+	partBuilder.year("UTC_STAMP");
+	partBuilder.month("UTC_STAMP");
+//	partBuilder.day("UTC_STAMP");
+//	partBuilder.hour("UTC_STAMP");
+	  
     DatasetDescriptor descriptor = new DatasetDescriptor.Builder()
         .schema(schema)
-        .partitionStrategy(new PartitionStrategy.Builder()
-        		.module("VARIABLE_ID", 10)
-        		.year("UTC_STAMP")
-        		.month("UTC_STAMP")
-//        		.day("UTC_STAMP")
-//        		.hour("UTC_STAMP")
-        		.build())
+        .partitionStrategy(partBuilder.build())
         .format(Formats.PARQUET)
         .property("parquet.file_per_block", "true")
-        .property("kite.writer.cache-size", "15")
+        .property("kite.writer.cache-size", "30")
         .compressionType(compressionType)
         .build();
     

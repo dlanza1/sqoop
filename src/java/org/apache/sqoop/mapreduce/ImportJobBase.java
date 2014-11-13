@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.RawComparator;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -332,12 +333,30 @@ public class ImportJobBase extends JobBase {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private static class DummyComparator<T> implements RawComparator<T>{
+
+		@Override
+		public int compare(T o1, T o2) {
+			return 0;
+		}
+
+		@Override
+		public int compare(byte[] arg0, int arg1, int arg2, byte[] arg3,
+				int arg4, int arg5) {
+			return 0;
+		}
+		
+	}
 
 	private void configureReducer(Job job, String tableName,
 			String tableClassName) {
 		
-		if(options.isUseReducePhaseForPartitioning())
+		if(options.isUseReducePhaseForPartitioning()){
 			job.setReducerClass(ParquetPartitionedImportReducer.class);
+		
+			job.setSortComparatorClass(DummyComparator.class);
+		}
 	}
 
 	/**

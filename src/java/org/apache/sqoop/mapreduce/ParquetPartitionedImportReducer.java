@@ -81,16 +81,8 @@ public class ParquetPartitionedImportReducer extends
 		// Loading of LOBs was delayed until we have a Context.
 		val.loadLargeObjects(lobLoader);
 
-		GenericRecord genericRecord = AvroUtil.toGenericRecord(val.getFieldMap(), schema,
+		return AvroUtil.toGenericRecord(val.getFieldMap(), schema,
 				bigDecimalFormatString);
-		
-		//Filter null values
-		if(genericRecord.get("VARIABLE_ID") == null
-				|| genericRecord.get("UTC_STAMP") == null
-				|| genericRecord.get("VALUE") == null)
-			return null;
-		
-		return genericRecord;
 	}
 
 	@Override
