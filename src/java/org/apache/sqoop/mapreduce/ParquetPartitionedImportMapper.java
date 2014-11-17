@@ -18,40 +18,27 @@
 
 package org.apache.sqoop.mapreduce;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.TimeZone;
 
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-
 import org.apache.sqoop.lib.SqoopRecord;
-import org.apache.sqoop.mapreduce.AutoProgressMapper;
 
 /**
  * Imports records by writing them to a Parquet File.
  */
 public class ParquetPartitionedImportMapper extends
-		AutoProgressMapper<LongWritable, SqoopRecord, Text, BytesWritable> {
+		AutoProgressMapper<LongWritable, SqoopRecord, IntWritable, SqoopRecord> {
 
-//	private static final int DIFF_HOURS = 0;
-	
-//	private static final long MILLISECONDS_TO_ADD = DIFF_HOURS * 60 * 60 * 1000;
-	
-//	private Calendar cal;
-	
 	private static int module;
-
+	private IntWritable output_key;
+	
 	@Override
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
-//		this.cal = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT-2"));
+		module = context.getConfiguration().getInt("partition.module", Integer.MAX_VALUE);
 		
-		module = context.getConfiguration().getInt("partition.module", -1);
+		output_key = new IntWritable();
 	}
 	
 	protected void map(
@@ -60,46 +47,11 @@ public class ParquetPartitionedImportMapper extends
 			Context context)
 			throws IOException, InterruptedException {
 		
-		//Get timestamp from record
-//		Timestamp timestamp = (Timestamp) val.getFieldMap().get("UTC_STAMP");
-//		this.cal.setTimeInMillis(timestamp.getTime());
+		int value = (int) val.getFieldMap().get("VARIABLE_ID");
 		
-		//Get partition key
-		Text keyOut = getKey(val);
+		output_key.set(value % module);
 		
-		context.write(keyOut, getBytes(val));
-	}
-
-	private BytesWritable getBytes(SqoopRecord val) throws IOException {
-
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutputStream out = new ObjectOutputStream(bos);
-		
-		val.write(out);
-		
-		out.close();
-		bos.close();	
-		
-		return new BytesWritable(bos.toByteArray());
-	}
-
-//	private void applyTimeDiff(Timestamp val) {
-//		long milliseconds = val.getTime() + MILLISECONDS_TO_ADD;
-//		int nanoseconds = val.getNanos();
-//		
-//		val.setTime(milliseconds);
-//		val.setNanos(nanoseconds);
-//	}
-
-	private Text getKey(SqoopRecord val) {
-//		return new Text(this.cal.get(Calendar.YEAR) + "-"
-//				+ this.cal.get(Calendar.MONTH) + "-"
-//				+ this.cal.get(Calendar.DAY_OF_MONTH) + " "
-//				+ this.cal.get(Calendar.HOUR_OF_DAY));
-		
-		int variable_id = (int) val.getFieldMap().get("VARIABLE_ID");
-		
-		return new Text(String.valueOf(variable_id % module));
+		context.write(output_key, val);
 	}
 
 }

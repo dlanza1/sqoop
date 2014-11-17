@@ -44,6 +44,7 @@ import org.apache.sqoop.mapreduce.hcat.SqoopHCatUtilities;
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.config.ConfigurationHelper;
 import com.cloudera.sqoop.lib.LargeObjectLoader;
+import com.cloudera.sqoop.lib.SqoopRecord;
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.ImportJobContext;
 import com.cloudera.sqoop.mapreduce.ImportJobBase;
@@ -117,11 +118,6 @@ public class DataDrivenImportJob extends ImportJobBase {
     }
 
     job.setMapperClass(getMapperClass());
-    
-    if(options.isUseReducePhaseForPartitioning()){
-	    job.setMapOutputKeyClass(Text.class);
-	    job.setMapOutputValueClass(BytesWritable.class);
-    }
   }
 
   private Schema generateAvroSchema(String tableName) throws IOException {

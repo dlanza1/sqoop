@@ -121,7 +121,7 @@ public final class ParquetJob {
         .partitionStrategy(partBuilder.build())
         .format(Formats.PARQUET)
         .property("parquet.file_per_block", "true")
-        .property("kite.writer.cache-size", "30")
+        .property("kite.writer.cache-size", "3")
         .compressionType(compressionType)
         .build();
     

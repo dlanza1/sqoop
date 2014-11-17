@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.RawComparator;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
@@ -42,9 +43,11 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.partition.HashPartitioner;
 import org.apache.sqoop.mapreduce.hcat.SqoopHCatUtilities;
 import org.apache.sqoop.util.PerfCounters;
 
@@ -263,13 +266,19 @@ public class ImportJobBase extends JobBase {
 		Job job = createJob(conf);
 		
 		String tableClassName = null;
+		Class<SqoopRecord> tableClass = null;
 		if (!getContext().getConnManager().isORMFacilitySelfManaged()) {
 			tableClassName = new TableClassName(options)
 					.getClassForTable(tableName);
 			
-			if(options.isUseReducePhaseForPartitioning())
+			if(options.isUseReducePhaseForPartitioning()){
+				tableClass = getRecordClass(ormJarFile, tableClassName);
 				job.getConfiguration().setClass("mapred.jar.record.class", 
-						getRecordClass(ormJarFile, tableClassName), SqoopRecord.class);
+						tableClass, SqoopRecord.class);
+				
+				job.setMapOutputKeyClass(IntWritable.class);
+			    job.setMapOutputValueClass(tableClass);
+			}
 		}
 		// For ORM self managed, we leave the tableClassName to null so that
 		// we don't check for non-existing classes.
@@ -334,17 +343,11 @@ public class ImportJobBase extends JobBase {
 		}
 	}
 	
-	private static class DummyComparator<T> implements RawComparator<T>{
+	public static class KeyModulePartitioner extends Partitioner<IntWritable, SqoopRecord>{
 
 		@Override
-		public int compare(T o1, T o2) {
-			return 0;
-		}
-
-		@Override
-		public int compare(byte[] arg0, int arg1, int arg2, byte[] arg3,
-				int arg4, int arg5) {
-			return 0;
+		public int getPartition(IntWritable key, SqoopRecord value, int numReduceTasks) {
+			return key.get() % numReduceTasks;
 		}
 		
 	}
@@ -354,8 +357,8 @@ public class ImportJobBase extends JobBase {
 		
 		if(options.isUseReducePhaseForPartitioning()){
 			job.setReducerClass(ParquetPartitionedImportReducer.class);
-		
-			job.setSortComparatorClass(DummyComparator.class);
+			
+			job.setPartitionerClass(KeyModulePartitioner.class);
 		}
 	}
 

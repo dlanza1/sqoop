@@ -1,22 +1,14 @@
 package org.apache.sqoop.mapreduce;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.SQLException;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.sqoop.avro.AvroUtil;
 
 import com.cloudera.sqoop.lib.LargeObjectLoader;
@@ -24,12 +16,11 @@ import com.cloudera.sqoop.lib.SqoopRecord;
 
 @SuppressWarnings("deprecation")
 public class ParquetPartitionedImportReducer extends
-		SqoopReducer<Text, BytesWritable, GenericRecord, NullWritable> {
+		SqoopReducer<IntWritable, SqoopRecord, GenericRecord, NullWritable> {
 
 	private Schema schema = null;
 	private boolean bigDecimalFormatString = true;
 	private LargeObjectLoader lobLoader = null;
-	private Class<SqoopRecord> recordClass;
 
 	@Override
 	protected void setup(Context context) throws IOException,
@@ -39,50 +30,28 @@ public class ParquetPartitionedImportReducer extends
 		bigDecimalFormatString = conf.getBoolean(
 				ImportJobBase.PROPERTY_BIGDECIMAL_FORMAT,
 				ImportJobBase.PROPERTY_BIGDECIMAL_FORMAT_DEFAULT);
+		
 		lobLoader = new LargeObjectLoader(conf, new Path(conf.get("sqoop.kite.lob.extern.dir", "/tmp/sqoop-parquet-" + context.getTaskAttemptID())));
-
-		this.recordClass = (Class<SqoopRecord>) context.getConfiguration()
-				.getClass("mapred.jar.record.class", SqoopRecord.class);
 	}
 
 	@Override
-	protected void reduce(Text key, Iterable<BytesWritable> values,
+	protected void reduce(IntWritable key, Iterable<SqoopRecord> values,
 			Context context) throws IOException, InterruptedException {
 
 		try {
 
-			for (BytesWritable bytesVal : values){
-				GenericRecord genericRecord = getGenericRecord(bytesVal);
+			for (SqoopRecord val : values){
+				// Loading of LOBs was delayed until we have a Context.
+				val.loadLargeObjects(lobLoader);
 				
-				if(genericRecord != null)
-					context.write(genericRecord , null);
+				context.write(AvroUtil.toGenericRecord(val.getFieldMap(), schema,
+							bigDecimalFormatString), null);
 			}
 
 		} catch (SQLException sqlE) {
 			throw new IOException(sqlE);
 		}
 
-	}
-
-	private GenericRecord getGenericRecord(BytesWritable bytesVal)
-			throws IOException, InterruptedException, SQLException {
-
-		SqoopRecord val = (SqoopRecord) ReflectionUtils.newInstance(
-				recordClass, null);
-
-		ByteArrayInputStream bis = new ByteArrayInputStream(bytesVal.getBytes());
-		ObjectInput in = new ObjectInputStream(bis);
-
-		val.readFields(in);
-
-		in.close();
-		bis.close();
-
-		// Loading of LOBs was delayed until we have a Context.
-		val.loadLargeObjects(lobLoader);
-
-		return AvroUtil.toGenericRecord(val.getFieldMap(), schema,
-				bigDecimalFormatString);
 	}
 
 	@Override

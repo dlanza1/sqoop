@@ -75,4 +75,10 @@ public class OraOopOracleDataChunkPartition extends OraOopOracleDataChunk {
     return sb.toString();
   }
 
+	@Override
+	public String toString() {
+		return "OraOopOracleDataChunkPartition [isSubPartition=" + isSubPartition
+				+ ", blocks=" + blocks + "]";
+	}
+
 }
