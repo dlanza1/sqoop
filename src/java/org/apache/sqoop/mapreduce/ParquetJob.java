@@ -104,28 +104,45 @@ public final class ParquetJob {
   private static Dataset createDataset(Schema schema,
       CompressionType compressionType, String uri, Configuration conf) {
 
-	int module = conf.getInt("partition.module", -1);
+	org.kitesdk.data.DatasetDescriptor.Builder descriptor = new DatasetDescriptor.Builder()
+      .schema(schema)
+      .format(Formats.PARQUET)
+      .compressionType(compressionType)
+      .property("parquet.file_per_block", conf.getBoolean("parquet.file_per_block", true)+"");
 	  
+	int kite_cahe_size = conf.getInt("kite.writer.cache-size", -1);
+	if(kite_cahe_size != -1)
+		descriptor.property("kite.writer.cache-size", kite_cahe_size + "");
+	
 	Builder partBuilder = new PartitionStrategy.Builder();
 	
-	if(module != -1)
+	int module = conf.getInt("partition.module", -1);
+	if(module != -1){
 		partBuilder.module("VARIABLE_ID", module);
+		descriptor.partitionStrategy(partBuilder.build());
+	}
 
-	partBuilder.year("UTC_STAMP");
-	partBuilder.month("UTC_STAMP");
-//	partBuilder.day("UTC_STAMP");
-//	partBuilder.hour("UTC_STAMP");
-	  
-    DatasetDescriptor descriptor = new DatasetDescriptor.Builder()
-        .schema(schema)
-        .partitionStrategy(partBuilder.build())
-        .format(Formats.PARQUET)
-        .property("parquet.file_per_block", "true")
-        .property("kite.writer.cache-size", "3")
-        .compressionType(compressionType)
-        .build();
+	if(conf.getBoolean("partition.year", false)){
+		partBuilder.year("UTC_STAMP");
+		descriptor.partitionStrategy(partBuilder.build());
+	}
+	
+	if(conf.getBoolean("partition.month", false)){
+		partBuilder.month("UTC_STAMP");
+		descriptor.partitionStrategy(partBuilder.build());
+	}
+	
+	if(conf.getBoolean("partition.day", false)){
+		partBuilder.day("UTC_STAMP");
+		descriptor.partitionStrategy(partBuilder.build());
+	}
+	
+	if(conf.getBoolean("partition.hour", false)){
+		partBuilder.hour("UTC_STAMP");
+		descriptor.partitionStrategy(partBuilder.build());
+	}
     
-    return Datasets.create(uri, descriptor, GenericRecord.class);
+    return Datasets.create(uri, descriptor.build(), GenericRecord.class);
   }
 
 }
