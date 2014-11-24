@@ -114,35 +114,45 @@ public final class ParquetJob {
 	if(kite_cahe_size != -1)
 		descriptor.property("kite.writer.cache-size", kite_cahe_size + "");
 	
-	Builder partBuilder = new PartitionStrategy.Builder();
-	
-	int module = conf.getInt("partition.module", -1);
-	if(module != -1){
-		partBuilder.module("VARIABLE_ID", module);
-		descriptor.partitionStrategy(partBuilder.build());
-	}
-
-	if(conf.getBoolean("partition.year", false)){
-		partBuilder.year("UTC_STAMP");
-		descriptor.partitionStrategy(partBuilder.build());
-	}
-	
-	if(conf.getBoolean("partition.month", false)){
-		partBuilder.month("UTC_STAMP");
-		descriptor.partitionStrategy(partBuilder.build());
-	}
-	
-	if(conf.getBoolean("partition.day", false)){
-		partBuilder.day("UTC_STAMP");
-		descriptor.partitionStrategy(partBuilder.build());
-	}
-	
-	if(conf.getBoolean("partition.hour", false)){
-		partBuilder.hour("UTC_STAMP");
-		descriptor.partitionStrategy(partBuilder.build());
-	}
+	PartitionStrategy partStrategy = getPartitionStrategy(conf);
+	if(partStrategy != null)
+		descriptor.partitionStrategy(partStrategy);
     
     return Datasets.create(uri, descriptor.build(), GenericRecord.class);
+  }
+
+  private static PartitionStrategy getPartitionStrategy(Configuration conf) {
+	Builder partBuilder = new PartitionStrategy.Builder();
+	
+	int module = conf.getInt("partitioning.module", -1);
+	String field_part_module = conf.get("partitioning.module.field");
+	if(module != -1 && field_part_module != null){
+		partBuilder.module(field_part_module, module);
+	}
+
+	String field_part_year = conf.get("partitioning.year.field");
+	if(field_part_year != null){
+		partBuilder.year(field_part_year);
+	}
+
+	String field_part_month = conf.get("partitioning.month.field");
+	if(field_part_month != null){
+		partBuilder.year(field_part_month);
+	}
+	
+	String field_part_day = conf.get("partitioning.day.field");
+	if(field_part_day != null){
+		partBuilder.year(field_part_day);
+	}
+	
+	String field_part_hour = conf.get("partitioning.hour.field");
+	if(field_part_hour != null){
+		partBuilder.year(field_part_hour);
+	}
+	
+	PartitionStrategy partStrategy = partBuilder.build();
+	
+	return partStrategy.getCardinality() != 0 ? partStrategy : null;
   }
 
 }

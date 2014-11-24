@@ -64,6 +64,8 @@ public class OracleManager
 
   public static final Log LOG = LogFactory.getLog(
       OracleManager.class.getName());
+  
+  public static final int BINARY_DOUBLE_SQL_DATA_TYPE = 101;
 
   /**
    * ORA-00942: Table or view does not exist. Indicates that the user does

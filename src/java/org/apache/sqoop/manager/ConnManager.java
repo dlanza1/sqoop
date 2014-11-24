@@ -196,6 +196,7 @@ public abstract class ConnManager {
       return Type.FLOAT;
     case Types.FLOAT:
     case Types.DOUBLE:
+    case OracleManager.BINARY_DOUBLE_SQL_DATA_TYPE:
       return Type.DOUBLE;
     case Types.NUMERIC:
     case Types.DECIMAL:
