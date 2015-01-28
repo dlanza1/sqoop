@@ -19,26 +19,40 @@
 package org.apache.sqoop.mapreduce;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.sqoop.lib.SqoopRecord;
+
+import com.cloudera.sqoop.lib.LargeObjectLoader;
 
 /**
  * Imports records by writing them to a Parquet File.
  */
 public class ParquetPartitionedImportMapper extends
-		AutoProgressMapper<LongWritable, SqoopRecord, IntWritable, SqoopRecord> {
+		AutoProgressMapper<LongWritable, SqoopRecord, LongWritable, SqoopRecord> {
 
 	private static int module;
-	private IntWritable output_key;
+	private LongWritable output_key;
+	private static String module_field;
+	
+	private LargeObjectLoader lobLoader = null;
 	
 	@Override
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
-		module = context.getConfiguration().getInt("partition.module", Integer.MAX_VALUE);
+		Configuration conf = context.getConfiguration();
 		
-		output_key = new IntWritable();
+		module = conf.getInt("partitioning.module", Integer.MAX_VALUE);
+		module_field = conf.get("partitioning.module.field");
+		
+		output_key = new LongWritable();
+		
+		lobLoader = new LargeObjectLoader(conf, new Path(conf.get("sqoop.kite.lob.extern.dir", "/tmp/sqoop-parquet-" + context.getTaskAttemptID())));
 	}
 	
 	protected void map(
@@ -47,11 +61,28 @@ public class ParquetPartitionedImportMapper extends
 			Context context)
 			throws IOException, InterruptedException {
 		
-		int value = (int) val.getFieldMap().get("VARIABLE_ID");
+		// Loading of LOBs was delayed until we have a Context.
+		try {
+			val.loadLargeObjects(lobLoader);
+			
+			long value = (long) val.getFieldMap().get(module_field);
+			output_key.set(value % module);
+			
+			context.write(output_key, val);
+		} catch (SQLException e) {
+			e.printStackTrace();
+
+			throw new IOException(e);
+		}
 		
-		output_key.set(value % module);
-		
-		context.write(output_key, val);
+	}
+
+
+	@Override
+	protected void cleanup(Context context) throws IOException {
+		if (null != lobLoader) {
+			lobLoader.close();
+		}
 	}
 
 }

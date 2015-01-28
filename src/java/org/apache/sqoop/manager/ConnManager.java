@@ -144,7 +144,8 @@ public abstract class ConnManager {
         || sqlType == Types.VARBINARY) {
       return BytesWritable.class.getName();
     } else if (sqlType == Types.CLOB) {
-      return ClobRef.class.getName();
+//      return ClobRef.class.getName();
+    	return "String";
     } else if (sqlType == Types.BLOB
         || sqlType == Types.LONGVARBINARY) {
       return BlobRef.class.getName();
@@ -207,6 +208,7 @@ public abstract class ConnManager {
     case Types.LONGNVARCHAR:
     case Types.NVARCHAR:
     case Types.NCHAR:
+    case Types.CLOB:
       return Type.STRING;
     case Types.DATE:
     case Types.TIME:

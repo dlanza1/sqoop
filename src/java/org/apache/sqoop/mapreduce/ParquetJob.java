@@ -137,17 +137,17 @@ public final class ParquetJob {
 
 	String field_part_month = conf.get("partitioning.month.field");
 	if(field_part_month != null){
-		partBuilder.year(field_part_month, field_part_month + "_part_month");
+		partBuilder.month(field_part_month, field_part_month + "_part_month");
 	}
 	
 	String field_part_day = conf.get("partitioning.day.field");
 	if(field_part_day != null){
-		partBuilder.year(field_part_day, field_part_day + "_part_day");
+		partBuilder.day(field_part_day, field_part_day + "_part_day");
 	}
 	
 	String field_part_hour = conf.get("partitioning.hour.field");
 	if(field_part_hour != null){
-		partBuilder.year(field_part_hour, field_part_day + "_part_hour");
+		partBuilder.hour(field_part_hour, field_part_hour + "_part_hour");
 	}
 	
 	PartitionStrategy partStrategy = partBuilder.build();

@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.RawComparator;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
@@ -276,7 +277,7 @@ public class ImportJobBase extends JobBase {
 				job.getConfiguration().setClass("mapred.jar.record.class", 
 						tableClass, SqoopRecord.class);
 				
-				job.setMapOutputKeyClass(IntWritable.class);
+				job.setMapOutputKeyClass(LongWritable.class);
 			    job.setMapOutputValueClass(tableClass);
 			}
 		}
@@ -343,11 +344,11 @@ public class ImportJobBase extends JobBase {
 		}
 	}
 	
-	public static class KeyModulePartitioner extends Partitioner<IntWritable, SqoopRecord>{
+	public static class KeyModulePartitioner extends Partitioner<LongWritable, SqoopRecord>{
 
 		@Override
-		public int getPartition(IntWritable key, SqoopRecord value, int numReduceTasks) {
-			return key.get() % numReduceTasks;
+		public int getPartition(LongWritable key, SqoopRecord value, int numReduceTasks) {
+			return (int) (key.get() % numReduceTasks);
 		}
 		
 	}
