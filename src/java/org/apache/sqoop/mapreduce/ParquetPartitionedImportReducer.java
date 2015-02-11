@@ -7,13 +7,14 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.sqoop.avro.AvroUtil;
 
 import com.cloudera.sqoop.lib.SqoopRecord;
 
 @SuppressWarnings("deprecation")
 public class ParquetPartitionedImportReducer extends
-		SqoopReducer<LongWritable, SqoopRecord, GenericRecord, NullWritable> {
+		SqoopReducer<Text, SqoopRecord, GenericRecord, NullWritable> {
 
 	private Schema schema = null;
 	private boolean bigDecimalFormatString = true;
@@ -30,7 +31,7 @@ public class ParquetPartitionedImportReducer extends
 	}
 
 	@Override
-	protected void reduce(LongWritable key, Iterable<SqoopRecord> values,
+	protected void reduce(Text key, Iterable<SqoopRecord> values,
 			Context context) throws IOException, InterruptedException {
 
 		for (SqoopRecord val : values){				

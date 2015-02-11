@@ -277,7 +277,7 @@ public class ImportJobBase extends JobBase {
 				job.getConfiguration().setClass("mapred.jar.record.class", 
 						tableClass, SqoopRecord.class);
 				
-				job.setMapOutputKeyClass(LongWritable.class);
+				job.setMapOutputKeyClass(Text.class);
 			    job.setMapOutputValueClass(tableClass);
 			}
 		}
@@ -344,11 +344,11 @@ public class ImportJobBase extends JobBase {
 		}
 	}
 	
-	public static class KeyModulePartitioner extends Partitioner<LongWritable, SqoopRecord>{
+	public static class KeyModulePartitioner extends Partitioner<Text, SqoopRecord>{
 
 		@Override
-		public int getPartition(LongWritable key, SqoopRecord value, int numReduceTasks) {
-			return (int) (key.get() % numReduceTasks);
+		public int getPartition(Text key, SqoopRecord value, int numReduceTasks) {
+			return Math.abs(key.hashCode() % numReduceTasks);
 		}
 		
 	}
